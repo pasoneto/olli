@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html>
+  <head>
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
+
+    <meta charset="UTF-8">
+
+    <script src="https://unpkg.com/jspsych@7.2.3"></script>
+    <script src="https://unpkg.com/@jspsych/plugin-html-button-response@1.1.1"></script>
+    <script src="https://unpkg.com/@jspsych/plugin-html-slider-response@1.1.1"></script>
+    <script src="https://unpkg.com/@jspsych/plugin-instructions@1.1.1"></script>
+    <script src="./plugin-video-slider-response.js"></script>
+
+    <link rel="stylesheet" href="https://unpkg.com/jspsych@7.2.3/css/jspsych.css">
+    <link rel="stylesheet" href="./generalCSS.css">
+
+  </head>
+
+  <body></body>
+
+  <style>
+
+  .jspsych-content{
+    display: flex
+  }
+
+
+  </style>
+
+
+  <script>
+    
+    var jsPsych;
+    window.jsPsych = initJsPsych({
+      show_progress_bar: true,
+      on_finish: function() {
+        //var userID = jatos.urlQueryParameters.user
+        //var studyID = jatos.urlQueryParameters.studyID;
+        //jsPsych.data.addProperties({userID: userID, studyID: studyID});
+        var finalData = jsPsych.data.get()
+      }
+    });
+
+    var frontPage = {
+        type: jsPsychInstructions,
+        pages: ["Hi", "Begin"].map(i => "<div id='text'>" + i + "</div>"),
+        button_label_next: "Next",
+        button_label_previous: "Previous",
+        show_clickable_nav: true
+    }
+
+    var video1 = {
+      type: jsPsychVideoSliderResponse,
+      stimulus: ["./videos/Song1.mp4"],
+      pages: ["Hi", "Begin"].map(i => "<div id='text'>" + i + "</div>"),
+      prompt: '<div>How much groove?</div><br><div class="volume-indicator" id="volumeIndicator">',
+      on_load: function(){
+        document.querySelector("#jspsych-video-slider-response-stimulus-video").style.width = '100%'
+        document.querySelector(".jspsych-video-slider-response-container").style.width = '50%'
+        document.querySelector("#jspsych-video-slider-response-wrapper").style.margin = "0"
+        document.getElementById("jspsych-video-slider-response-stimulus-video").style.maxWidth = "700px"
+
+        var volumeSlider = document.querySelector(".jspsych-slider");
+        var volumeIndicator = document.getElementById("volumeIndicator");
+
+        // Remove existing rectangles
+        while (volumeIndicator.firstChild) {
+          volumeIndicator.removeChild(volumeIndicator.firstChild);
+        }
+
+        // Calculate color based on volume percentage
+        var percentage = (volumeSlider.value - volumeSlider.min) / (volumeSlider.max - volumeSlider.min);
+        var width = percentage*100 
+        document.querySelector(".volume-indicator").style.width = width + "%"
+        // Add rectangles dynamically
+        var nRectangles = parseInt(width)
+        if(nRectangles < 3){
+          var nRectangles = 3
+        }
+        for (var i = 0; i < nRectangles; i++) { // You can adjust the number of rectangles
+          var rectangle = document.createElement("div");
+          rectangle.className = "rectangle";
+          rectangle.style.height = (i) + 10 + "px"; // Adjust the height
+          hue = 120 - ((120*i)/100)
+          rectangle.style.backgroundColor = "hsl(" + hue + ", 70%, 50%)";
+          volumeIndicator.appendChild(rectangle);
+        }
+      }
+    };
+
+    var video2 = {
+      type: jsPsychVideoSliderResponse,
+      stimulus: ["./videos/Song2.mp4"],
+      labels: ["Little groove", "A lot of groove"],
+      prompt: '<div>How much groove?</div><br><div class="volume-indicator" id="volumeIndicator">',
+      on_load: function(){
+        document.querySelector("#jspsych-video-slider-response-stimulus-video").style.width = '100%'
+        document.querySelector(".jspsych-video-slider-response-container").style.width = '50%'
+        document.querySelector("#jspsych-video-slider-response-wrapper").style.margin = "0"
+        document.getElementById("jspsych-video-slider-response-stimulus-video").style.maxWidth = "700px"
+
+        var volumeSlider = document.querySelector(".jspsych-slider");
+        var volumeIndicator = document.getElementById("volumeIndicator");
+
+        // Remove existing rectangles
+        while (volumeIndicator.firstChild) {
+          volumeIndicator.removeChild(volumeIndicator.firstChild);
+        }
+
+        // Calculate color based on volume percentage
+        var percentage = (volumeSlider.value - volumeSlider.min) / (volumeSlider.max - volumeSlider.min);
+        var width = percentage*100 
+        document.querySelector(".volume-indicator").style.width = width + "%"
+        // Add rectangles dynamically
+        var nRectangles = parseInt(width)
+        if(nRectangles < 3){
+          var nRectangles = 3
+        }
+        for (var i = 0; i < nRectangles; i++) { // You can adjust the number of rectangles
+          var rectangle = document.createElement("div");
+          rectangle.className = "rectangle";
+          rectangle.style.height = (i) + 10 + "px"; // Adjust the height
+          hue = 120 - ((120*i)/100)
+          rectangle.style.backgroundColor = "hsl(" + hue + ", 70%, 50%)";
+          volumeIndicator.appendChild(rectangle);
+        }
+      }
+    };
+
+    var messageFinishSub = {
+      type: jsPsychHtmlButtonResponse,
+      prompt: "Thank you for your time",
+      choices: [],
+      trial_duration: 1000,
+      stimulus: '',
+    };
+
+    jsPsych.run([frontPage, video1, video2, messageFinishSub])
+
+
+ </script>
+</html>
