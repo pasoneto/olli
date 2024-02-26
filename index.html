@@ -36,10 +36,10 @@
     window.jsPsych = initJsPsych({
       show_progress_bar: true,
       on_finish: function() {
-        //var userID = jatos.urlQueryParameters.user
-        //var studyID = jatos.urlQueryParameters.studyID;
-        //jsPsych.data.addProperties({userID: userID, studyID: studyID});
+        var participantName = jsPsych.data.getURLVariable("participantName");
+        jsPsych.data.addProperties({participant: participantName});
         var finalData = jsPsych.data.get()
+        finalData.localSave('csv', participantName + '.csv');
       }
     });
 
@@ -51,17 +51,65 @@
 
     var frontPage = {
         type: jsPsychInstructions,
-        pages: ["Hi", "Begin"].map(i => "<div id='text'>" + i + "</div>"),
-        button_label_next: "Next",
-        button_label_previous: "Previous",
+        pages: ["Arvioi kappaleen groovea liukuvalla asteikolla. Liikuta groovemittaria sen mukaan, miten groove mielestäsi muuttuu kappaleen aikana.", "Ensin harjoitellaan", "Arvioi kuinka korkealla aurinko on taivaalla"].map(i => "<div id='text'>" + i + "</div>"),
+        button_label_next: "Seuravaa",
+        button_label_previous: "Edellinen",
         show_clickable_nav: true
     }
+
+    var between = {
+      type: jsPsychHtmlButtonResponse,
+      prompt: "",
+      choices: ["Seuravaa"],
+      //trial_duration: 1000,
+      stimulus: '',
+    };
+
+    var video0 = {
+      type: jsPsychVideoSliderResponse,
+      stimulus: ["./videos/sunrise.mp4"],
+      labels: ["Erittäin matala", "Erittäin korkea"],
+      prompt: '<div>Arvioi kuinka korkealla aurinko on taivaalla</div><br><div class="volume-indicator" id="volumeIndicator">',
+      on_load: function(){
+        document.querySelector("#jspsych-video-slider-response-stimulus-video").style.width = '100%'
+        document.querySelector(".jspsych-video-slider-response-container").style.width = '50%'
+        document.querySelector("#jspsych-video-slider-response-wrapper").style.margin = "0"
+        document.querySelector("#jspsych-video-slider-response-wrapper").style.width = "100%"
+        document.getElementById("jspsych-video-slider-response-stimulus-video").style.maxWidth = "700px"
+
+        var volumeSlider = document.querySelector(".jspsych-slider");
+        var volumeIndicator = document.getElementById("volumeIndicator");
+
+        // Remove existing rectangles
+        while (volumeIndicator.firstChild) {
+          volumeIndicator.removeChild(volumeIndicator.firstChild);
+        }
+
+        // Calculate color based on volume percentage
+        var percentage = (volumeSlider.value - volumeSlider.min) / (volumeSlider.max - volumeSlider.min);
+        var width = percentage*100 
+        document.querySelector(".volume-indicator").style.width = width + "%"
+        // Add rectangles dynamically
+        var nRectangles = parseInt(width)
+        if(nRectangles < 3){
+          var nRectangles = 3
+        }
+        for (var i = 0; i < nRectangles; i++) { // You can adjust the number of rectangles
+          var rectangle = document.createElement("div");
+          rectangle.className = "rectangle";
+          rectangle.style.height = (i) + 10 + "px"; // Adjust the height
+          hue = 120 - ((120*i)/100)
+          rectangle.style.backgroundColor = "hsl(" + hue + ", 70%, 50%)";
+          volumeIndicator.appendChild(rectangle);
+        }
+      }
+    };
 
     var video1 = {
       type: jsPsychVideoSliderResponse,
       stimulus: ["./videos/song1.mp4"],
-      pages: ["Hi", "Begin"].map(i => "<div id='text'>" + i + "</div>"),
-      prompt: '<div>How much groove?</div><br><div class="volume-indicator" id="volumeIndicator">',
+      labels: ["Kappaleessa/kohdassa on<br>mielestäsi hyvin vähän tai ei<br>ollenkaan groovea", "Kappaleessa/kohdassa<br>on mielestäsi erittäin<br>hyvä groove"],
+      prompt: '<div>Arvioi kappaleen groovea liukuvalla asteikolla. Liikuta groovemittaria sen mukaan, miten groove mielestäsi muuttuu kappaleen aikana.</div><br><div class="volume-indicator" id="volumeIndicator">',
       on_load: function(){
         document.querySelector("#jspsych-video-slider-response-stimulus-video").style.width = '100%'
         document.querySelector(".jspsych-video-slider-response-container").style.width = '50%'
@@ -99,8 +147,8 @@
     var video2 = {
       type: jsPsychVideoSliderResponse,
       stimulus: ["./videos/song2.mp4"],
-      labels: ["Little groove", "A lot of groove"],
-      prompt: '<div>How much groove?</div><br><div class="volume-indicator" id="volumeIndicator">',
+      labels: ["Kappaleessa/kohdassa on<br>mielestäsi hyvin vähän tai ei<br>ollenkaan groovea", "Kappaleessa/kohdassa<br>on mielestäsi erittäin<br>hyvä groove"],
+      prompt: '<div>Arvioi kappaleen groovea liukuvalla asteikolla. Liikuta groovemittaria sen mukaan, miten groove mielestäsi muuttuu kappaleen aikana.</div><br><div class="volume-indicator" id="volumeIndicator">',
       on_load: function(){
         document.querySelector("#jspsych-video-slider-response-stimulus-video").style.width = '100%'
         document.querySelector(".jspsych-video-slider-response-container").style.width = '50%'
@@ -137,13 +185,13 @@
 
     var messageFinishSub = {
       type: jsPsychHtmlButtonResponse,
-      prompt: "Thank you for your time",
+      prompt: "Kiitos",
       choices: [],
       trial_duration: 1000,
       stimulus: '',
     };
 
-    jsPsych.run([preload, frontPage, video1, video2, messageFinishSub])
+    jsPsych.run([preload, frontPage, video0, between, video1, between, video2, messageFinishSub])
 
 
  </script>
